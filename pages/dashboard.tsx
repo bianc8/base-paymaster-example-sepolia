@@ -72,18 +72,42 @@ export default function DashboardPage() {
         autoClose: 5000,
       });
     } catch (error) {
-      console.error("Mint failed with error: ", error);
-      toast.update(toastId, {
-        render: (
-          <Alert>
-            There was an error sending your transaction. See the developer
-            console for more info.
-          </Alert>
-        ),
-        type: "error",
-        isLoading: false,
-        autoClose: 3000,
-      });
+      try {
+        if ((error as any).code === -32602) {
+          toast.update(toastId, {
+            render: (
+              <Alert>
+                The minting operation is longer than expected. Please check the
+                transaction status on the explorer.
+              </Alert>
+            ),
+            type: "warning",
+            isLoading: false,
+            autoClose: 5000,
+          });
+          console.warn(
+            `Minting operation is longer than expected. Warn code : ` +
+              (error as any).code +
+              `. Detail: `,
+            error
+          );
+        } else {
+          throw error;
+        }
+      } catch (error) {
+        console.error("Mint failed with error: ", error);
+        toast.update(toastId, {
+          render: (
+            <Alert>
+              There was an error sending your transaction. See the developer
+              console for more info.
+            </Alert>
+          ),
+          type: "error",
+          isLoading: false,
+          autoClose: 3000,
+        });
+      }
     }
 
     setIsMinting(false);
